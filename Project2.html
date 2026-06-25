@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Quiz App</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#4f46e5,#7c3aed);
+    padding:20px;
+}
+
+.quiz-box{
+    background:white;
+    width:700px;
+    max-width:100%;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.2);
+}
+
+h1{
+    text-align:center;
+    color:#333;
+    margin-bottom:20px;
+}
+
+.progress-bar{
+    width:100%;
+    height:10px;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:25px;
+}
+
+.progress{
+    height:100%;
+    width:0%;
+    background:#4f46e5;
+    transition:.3s;
+}
+
+#question{
+    font-size:24px;
+    font-weight:600;
+    color:#222;
+    margin-bottom:20px;
+}
+
+.answer-btn{
+    width:100%;
+    padding:15px;
+    margin:10px 0;
+    border:none;
+    border-radius:10px;
+    background:#f1f5f9;
+    cursor:pointer;
+    font-size:17px;
+    transition:.3s;
+}
+
+.answer-btn:hover:not(:disabled){
+    background:#4f46e5;
+    color:white;
+}
+
+.correct{
+    background:#22c55e !important;
+    color:white;
+}
+
+.wrong{
+    background:#ef4444 !important;
+    color:white;
+}
+
+.answer-btn:disabled{
+    cursor:not-allowed;
+}
+
+.controls{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:20px;
+}
+
+#score{
+    font-size:18px;
+    font-weight:bold;
+    color:#444;
+}
+
+#next-btn,
+#restart-btn{
+    padding:12px 25px;
+    border:none;
+    border-radius:10px;
+    background:#4f46e5;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+    transition:.3s;
+}
+
+#next-btn:hover,
+#restart-btn:hover{
+    opacity:.9;
+}
+
+.hidden{
+    display:none;
+}
+
+#result{
+    text-align:center;
+}
+
+#result h2{
+    margin-bottom:15px;
+    color:#222;
+}
+
+#result p{
+    font-size:20px;
+    margin-bottom:20px;
+}
+</style>
+</head>
+<body>
+
+<div class="quiz-box">
+
+    <h1>🧠 Ultimate Quiz</h1>
+
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+
+    <div id="quiz-screen">
+
+        <div id="question"></div>
+
+        <div id="answers"></div>
+
+        <div class="controls">
+            <div id="score">Score: 0</div>
+            <button id="next-btn" class="hidden">
+                Next Question
+            </button>
+        </div>
+
+    </div>
+
+    <div id="result" class="hidden">
+        <h2>Quiz Completed!</h2>
+        <p id="final-score"></p>
+        <button id="restart-btn">
+            Restart Quiz
+        </button>
+    </div>
+
+</div>
+
+<script>
+
+const questions = [
+{
+    question: "What is the capital of France?",
+    answers: ["London","Paris","Berlin","Rome"],
+    correct: 1
+},
+{
+    question: "Which language styles web pages?",
+    answers: ["Python","Java","CSS","C++"],
+    correct: 2
+},
+{
+    question: "Which planet is known as the Red Planet?",
+    answers: ["Mars","Venus","Saturn","Mercury"],
+    correct: 0
+},
+{
+    question: "What does HTML stand for?",
+    answers:[
+        "Hyper Text Markup Language",
+        "High Transfer Machine Language",
+        "Home Tool Markup Language",
+        "Hyper Transfer Markup Language"
+    ],
+    correct:0
+},
+{
+    question: "Which company created JavaScript?",
+    answers:[
+        "Microsoft",
+        "Netscape",
+        "Google",
+        "Apple"
+    ],
+    correct:1
+}
+];
+
+let currentQuestion = 0;
+let score = 0;
+
+const questionEl = document.getElementById("question");
+const answersEl = document.getElementById("answers");
+const scoreEl = document.getElementById("score");
+const nextBtn = document.getElementById("next-btn");
+const progressEl = document.getElementById("progress");
+
+const quizScreen = document.getElementById("quiz-screen");
+const resultScreen = document.getElementById("result");
+const finalScoreEl = document.getElementById("final-score");
+const restartBtn = document.getElementById("restart-btn");
+
+function loadQuestion(){
+
+    nextBtn.classList.add("hidden");
+
+    const q = questions[currentQuestion];
+
+    questionEl.textContent = q.question;
+
+    answersEl.innerHTML = "";
+
+    q.answers.forEach((answer,index)=>{
+
+        const button = document.createElement("button");
+
+        button.classList.add("answer-btn");
+        button.textContent = answer;
+
+        button.addEventListener("click",()=>{
+            checkAnswer(index,button);
+        });
+
+        answersEl.appendChild(button);
+    });
+
+    updateProgress();
+}
+
+function checkAnswer(selectedIndex,selectedButton){
+
+    const correctIndex =
+    questions[currentQuestion].correct;
+
+    const buttons =
+    document.querySelectorAll(".answer-btn");
+
+    buttons.forEach(btn=>{
+        btn.disabled = true;
+    });
+
+    if(selectedIndex === correctIndex){
+
+        selectedButton.classList.add("correct");
+        score++;
+
+    }else{
+
+        selectedButton.classList.add("wrong");
+
+        buttons[correctIndex]
+        .classList.add("correct");
+    }
+
+    scoreEl.textContent = `Score: ${score}`;
+
+    nextBtn.classList.remove("hidden");
+}
+
+nextBtn.addEventListener("click",()=>{
+
+    currentQuestion++;
+
+    if(currentQuestion < questions.length){
+
+        loadQuestion();
+
+    }else{
+
+        showResult();
+    }
+});
+
+function updateProgress(){
+
+    const percent =
+    (currentQuestion / questions.length) * 100;
+
+    progressEl.style.width = percent + "%";
+}
+
+function showResult(){
+
+    progressEl.style.width = "100%";
+
+    quizScreen.classList.add("hidden");
+
+    resultScreen.classList.remove("hidden");
+
+    finalScoreEl.textContent =
+    `You scored ${score} out of ${questions.length}!`;
+}
+
+restartBtn.addEventListener("click",()=>{
+
+    currentQuestion = 0;
+    score = 0;
+
+    scoreEl.textContent = "Score: 0";
+
+    quizScreen.classList.remove("hidden");
+    resultScreen.classList.add("hidden");
+
+    loadQuestion();
+});
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>
